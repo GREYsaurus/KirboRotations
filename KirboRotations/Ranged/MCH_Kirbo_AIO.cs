@@ -1,9 +1,14 @@
 ﻿using Dalamud.Logging;
-using ImGuiNET;
-using System.Numerics;
 
 namespace KirboRotations.Ranged;
 
+#pragma warning disable CS0612 // Type or member is obsolete
+[SourceCode("https://github.com/BrakusTapus/KirboRotations/blob/main/Ranged/MCH_Kirbo_AIO.cs")]
+[LinkDescription("https://i.imgur.com/23r8kFK.png", "Early AA")]
+[LinkDescription("https://i.imgur.com/vekKW2k.jpg", "Delayed Tools")]
+[LinkDescription("https://i.imgur.com/bkLg5WS.png", "123 Tools")]
+[LinkDescription("https://i.imgur.com/qdCOQKy.png", "Fast Wildfire")]
+#pragma warning restore CS0612 // Type or member is obsolete
 [RotationDesc("Rotation for MCH", ActionID.Wildfire)]
 internal class MCH_Kirbo_AIO : MCH_Base
 {
@@ -46,13 +51,14 @@ internal class MCH_Kirbo_AIO : MCH_Base
     #region OpenerState
     internal enum OpenerState
     {
+        _,
         PrePull,
         InOpener,
         OpenerFinished,
         FailedOpener
     }
     #endregion
-
+    
     #region Countdown instructions
     protected override IAction CountDownAction(float remainTime)
     {
@@ -101,17 +107,17 @@ internal class MCH_Kirbo_AIO : MCH_Base
 
         if (Player.Level < 90)
         {
-            if (AirAnchor.EnoughLevel)
-            { if (remainTime <= 0.6 + Ping && AirAnchor.CanUse(out _)) return AirAnchor; }
+            if (AirAnchor.EnoughLevel && remainTime <= 0.6 + Ping && AirAnchor.CanUse(out _))
+            { return AirAnchor; }
 
-            if (!AirAnchor.EnoughLevel && Drill.EnoughLevel)
-            { if (remainTime <= 0.6 + Ping && Drill.CanUse(out _)) return Drill; }
+            if (!AirAnchor.EnoughLevel && Drill.EnoughLevel && remainTime <= 0.6 + Ping && Drill.CanUse(out _))
+            { return Drill; }
 
-            if (!AirAnchor.EnoughLevel && !Drill.EnoughLevel && HotShot.EnoughLevel)
-            { if (remainTime <= 0.6 + Ping && HotShot.CanUse(out _)) return HotShot; }
+            if (!AirAnchor.EnoughLevel && !Drill.EnoughLevel && HotShot.EnoughLevel && remainTime <= 0.6 + Ping && HotShot.CanUse(out _))
+            { return HotShot; }
 
-            if (!AirAnchor.EnoughLevel && !Drill.EnoughLevel && !HotShot.EnoughLevel)
-            { if (remainTime <= 0.6 + Ping && CleanShot.CanUse(out _)) return CleanShot; }
+            if (!AirAnchor.EnoughLevel && !Drill.EnoughLevel && !HotShot.EnoughLevel && remainTime <= 0.6 + Ping && CleanShot.CanUse(out _))
+            { return CleanShot; }
 
             if (remainTime < 5 && Reassemble.CurrentCharges > 1) return Reassemble;
         }
@@ -349,7 +355,7 @@ internal class MCH_Kirbo_AIO : MCH_Base
 
     #region Global Cooldown Actions (GCD's)
     protected override bool EmergencyGCD(out IAction act)
-    {
+    { 
         // Loops the opener until done
         if (InOpener) { return Opener(out act); }
 
@@ -658,9 +664,8 @@ internal class MCH_Kirbo_AIO : MCH_Base
                     }
 
                     // 5. Hypercharge
-                    if (SafeToUseHypercharge
-                        || !Drill.EnoughLevel) { if (!Wildfire.ElapsedAfter(90) && Wildfire.IsCoolingDown) return true; }
-                    break;
+                    if ((SafeToUseHypercharge
+                        || !Drill.EnoughLevel) && !Wildfire.ElapsedAfter(90) && Wildfire.IsCoolingDown) return true; break;
             }
         }
 
@@ -770,7 +775,6 @@ internal class MCH_Kirbo_AIO : MCH_Base
     public override void DisplayStatus()
     {
         var PartySize = PartyMembers.Count();
-        var p_name = Player.Name.ToString();
         #region Opener var's
 
         var Opener_Available = OpenerActionsAvailable ? "Available" : "Unavailable";
