@@ -36,6 +36,7 @@ public class SMN_Kirbo : SMN_Base
     private int Openerstep = 0;
     private bool OpenerActionsAvailable { get; set; }
     private bool InOpener { get; set; }
+
     #endregion Variable's
 
     #region Buffs
@@ -66,7 +67,6 @@ public class SMN_Kirbo : SMN_Base
     #endregion
 
     #region Opener instructions
-
     private bool Opener(out IAction act)
     {
         // Start of combat encounter
@@ -293,6 +293,10 @@ public class SMN_Kirbo : SMN_Base
     protected override bool EmergencyAbility(IAction nextGCD, out IAction act)
     {
         if (InOpener) { return Opener(out act); }
+        if (!SearingLight.ElapsedAfter(10) || SearingLight.ElapsedAfter(115))
+        {
+            if (UseBurstMedicine(out act, false)) return true;
+        }
         if (!InOpener && Player.HasStatus(false, StatusID.Silence) && Player.HasStatus(false, StatusID.SearingLight) && !Player.HasStatus(false, StatusID.Weakness) && InBahamut && UseBurstMedicine(out act))
         {
             return true;

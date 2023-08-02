@@ -6,6 +6,17 @@
     <NoWarn>1701;1702;S101;</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Magical\SMN_TEST.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Magical\SMN_TEST.cs" />
+  </ItemGroup>
+  <ItemGroup>
 	  <PackageReference Include="RotationSolver.Basic" Version="3.1.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="ECommons">
+      <HintPath>..\..\..\AppData\Roaming\XIVLauncher\addon\Hooks\dev\ECommons.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>
