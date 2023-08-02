@@ -1,4 +1,5 @@
 ﻿using Dalamud.Logging;
+using Dalamud.Game.ClientState.Conditions;
 
 namespace KirboRotations.Ranged;
 
@@ -48,17 +49,6 @@ internal class MCH_Kirbo_AIO : MCH_Base
     private bool InOpener { get; set; }
     #endregion
 
-    #region OpenerState
-    internal enum OpenerState
-    {
-        _,
-        PrePull,
-        InOpener,
-        OpenerFinished,
-        FailedOpener
-    }
-    #endregion
-    
     #region Countdown instructions
     protected override IAction CountDownAction(float remainTime)
     {
@@ -69,14 +59,14 @@ internal class MCH_Kirbo_AIO : MCH_Base
                 // Early AA [Done]
                 case 0:
                     if (remainTime <= 0.5 + Ping && AirAnchor.CanUse(out _)) return AirAnchor;
-                    if (remainTime <= 1.1 + 0.6 + Ping && UseBurstMedicine(out var act)) return act;
+                    if (remainTime <= 1.1 + 0.6 + Ping && UseBurstMedicine(out var act, false)) return act;
                     if (remainTime < 5 && Reassemble.CurrentCharges > 1) return Reassemble;
                     break;
 
                 // Delayed Tools [Done]
                 case 1:
                     if (remainTime <= 0.5 + Ping && SplitShot.CanUse(out _)) return SplitShot;
-                    if (remainTime <= 1.1 + 0.6 + Ping && UseBurstMedicine(out var act1)) return act1;
+                    if (remainTime <= 1.1 + 0.6 + Ping && UseBurstMedicine(out var act1, false)) return act1;
                     break;
 
                 // 123 Tools [Done]
@@ -93,7 +83,7 @@ internal class MCH_Kirbo_AIO : MCH_Base
                 // The FFlogs Opener [Done]
                 case 4:
                     if (remainTime <= 0.5 + Ping && AirAnchor.CanUse(out _)) return AirAnchor;
-                    if (remainTime <= 1.2f + Ping && UseBurstMedicine(out var act2)) return act2;
+                    if (remainTime <= 1.2f + Ping && UseBurstMedicine(out var act2, false)) return act2;
                     if (remainTime < 5 && Reassemble.CurrentCharges > 1) return Reassemble;
                     break;
 
@@ -355,7 +345,7 @@ internal class MCH_Kirbo_AIO : MCH_Base
 
     #region Global Cooldown Actions (GCD's)
     protected override bool EmergencyGCD(out IAction act)
-    { 
+    {
         // Loops the opener until done
         if (InOpener) { return Opener(out act); }
 
@@ -795,13 +785,13 @@ internal class MCH_Kirbo_AIO : MCH_Base
 
         if (ImGui.Button("Test"))
         {
-            PluginLog.LogVerbose(   "STOP, RIGHT THERE ");
-            PluginLog.LogDebug(        "STOP, RIGHT THERE ");
-            PluginLog.LogInformation(  "STOP, RIGHT THERE ");
-            PluginLog.LogWarning(   "STOP, RIGHT THERE ");
-            PluginLog.LogDebug(        "STOP, RIGHT THERE ");
-            PluginLog.LogError(        "STOP, RIGHT THERE ");
-            PluginLog.Fatal(        "STOP, RIGHT THERE ");
+            PluginLog.LogVerbose("STOP, RIGHT THERE ");
+            PluginLog.LogDebug("STOP, RIGHT THERE ");
+            PluginLog.LogInformation("STOP, RIGHT THERE ");
+            PluginLog.LogWarning("STOP, RIGHT THERE ");
+            PluginLog.LogDebug("STOP, RIGHT THERE ");
+            PluginLog.LogError("STOP, RIGHT THERE ");
+            PluginLog.Fatal("STOP, RIGHT THERE ");
         }
 
         ImGui.Separator();

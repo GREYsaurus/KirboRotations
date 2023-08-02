@@ -1,4 +1,6 @@
-﻿namespace KirboRotations.Magical;
+﻿using RotationSolver.Basic.Data;
+
+namespace KirboRotations.Magical;
 
 #pragma warning disable CS0612 // Type or member is obsolete
 [SourceCode("https://github.com/IncognitoWater/IncognitoWaterRotations/blob/main/IcWaRotations/Magical/Smn_Rota.cs")]
@@ -64,17 +66,6 @@ public class SMN_Kirbo : SMN_Base
     #endregion
 
     #region Opener instructions
-
-    /// <summary>
-    /// The logic for the Opener goes
-    /// 1. The 'OpenerInProgress' variable is set to True during the countdown
-    /// 2. While the 'OpenerInProgress' is True the 'ProcessOpenerStep' will do the opener rotation
-    ///    step by step
-    /// 3. Once 'OpenerInProgress' reaches the final step it will then set the 'ReachedEndOfOpener'
-    ///    variable to True
-    /// 4. When the variable 'ReachedEndOfOpener' becomes True, the variable 'OpenerFinshed' is set
-    ///    to True, the variable 'OpenerInProgress' to False and the 'OpenerStep' value set back to 0.
-    /// </summary>
     private bool Opener(out IAction act)
     {
         // Start of combat encounter
@@ -82,28 +73,33 @@ public class SMN_Kirbo : SMN_Base
 
         switch (Configs.GetCombo("OpenerSelection"))
         {
-            default:
-                break;
             // TITAN FIRST OPENER
             case 0:
                 if (InOpener)
                 {
                     switch (Openerstep)
                     {
-                        case 0: return ProcessOpenerStep(IsLastAction(true, Ruin), Ruin.CanUse(out act, CanUseOption.MustUse));
-                        case 1: return ProcessOpenerStep(IsLastAction(true, SummonBahamut), SummonBahamut.CanUse(out act, CanUseOption.MustUse));
-                        case 2: return ProcessOpenerStep(IsLastAction(false, SearingLight), SearingLight.CanUse(out act, CanUseOption.MustUse | CanUseOption.OnLastAbility));
-                        case 3: return ProcessOpenerStep(IsLastAction(true, Ruin), Ruin.CanUse(out act, CanUseOption.MustUse));
-                        case 4: return ProcessOpenerStep(IsLastAction(true, Ruin) && !CombatElapsedLessGCD(3), Ruin.CanUse(out act, CanUseOption.MustUse));
-                        case 5: return ProcessOpenerStep(IsLastAction(true, Ruin) && !CombatElapsedLessGCD(4), Ruin.CanUse(out act, CanUseOption.MustUse));
-                        case 6: return ProcessOpenerStep(IsLastAction(true, EnergyDrain), EnergyDrain.CanUse(out act, CanUseOption.MustUse));
-                        case 7: return ProcessOpenerStep(IsLastAction(true, EnkindleBahamut), EnkindleBahamut.CanUse(out act, CanUseOption.MustUse | CanUseOption.OnLastAbility));
-                        case 8: return ProcessOpenerStep(IsLastAction(true, Ruin), Ruin.CanUse(out act, CanUseOption.MustUse));
-                        case 9: return ProcessOpenerStep(IsLastAction(false, DeathFlare), DeathFlare.CanUse(out act, CanUseOption.MustUse));
-                        case 10: return ProcessOpenerStep(IsLastAction(false, Fester), Fester.CanUse(out act, CanUseOption.MustUseEmpty | CanUseOption.OnLastAbility));
-                        case 11: return ProcessOpenerStep(IsLastAction(true, Ruin), Ruin.CanUse(out act, CanUseOption.MustUse));
-                        case 12: return ProcessOpenerStep(IsLastAction(false, Fester), Fester.CanUse(out act, CanUseOption.MustUseEmpty));
-                        case 13: return ProcessOpenerStep(IsLastAction(true, Ruin), Ruin.CanUse(out act, CanUseOption.MustUse));
+                        case 0:
+                            return ProcessOpenerStep(IsLastAction(true, Ruin), Ruin.CanUse(out act, CanUseOption.MustUse));
+                        case 1:
+                            return ProcessOpenerStep(IsLastAction(true, SummonBahamut), SummonBahamut.CanUse(out act, CanUseOption.MustUse));
+                        case 2:
+                            return ProcessOpenerStep(IsLastAction(false, SearingLight), SearingLight.CanUse(out act, CanUseOption.MustUse | CanUseOption.OnLastAbility));
+                        case 3:
+                            return ProcessOpenerStep(IsLastAction(true, Ruin), Ruin.CanUse(out act, CanUseOption.MustUse));
+
+                        case 4: return ProcessOpenerStep(IsLastAction(true, Ruin), Ruin.CanUse(out act, CanUseOption.MustUse));
+
+                        case 5: return ProcessOpenerStep(IsLastAction(true, Ruin) && !CombatElapsedLessGCD(3), Ruin.CanUse(out act, CanUseOption.MustUse));
+                        case 6: return ProcessOpenerStep(IsLastAction(true, Ruin) && !CombatElapsedLessGCD(4), Ruin.CanUse(out act, CanUseOption.MustUse));
+                        case 7: return ProcessOpenerStep(IsLastAction(true, EnergyDrain), EnergyDrain.CanUse(out act, CanUseOption.MustUse));
+                        case 8: return ProcessOpenerStep(IsLastAction(true, EnkindleBahamut), EnkindleBahamut.CanUse(out act, CanUseOption.MustUse | CanUseOption.OnLastAbility));
+                        case 9: return ProcessOpenerStep(IsLastAction(true, Ruin), Ruin.CanUse(out act, CanUseOption.MustUse));
+                        case 10: return ProcessOpenerStep(IsLastAction(false, DeathFlare), DeathFlare.CanUse(out act, CanUseOption.MustUse));
+                        case 11: return ProcessOpenerStep(IsLastAction(false, Fester), Fester.CanUse(out act, CanUseOption.MustUseEmpty | CanUseOption.OnLastAbility));
+                        case 12: return ProcessOpenerStep(IsLastAction(true, Ruin), Ruin.CanUse(out act, CanUseOption.MustUse));
+                        case 13: return ProcessOpenerStep(IsLastAction(false, Fester), Fester.CanUse(out act, CanUseOption.MustUseEmpty));
+                        case 14: return ProcessOpenerStep(IsLastAction(true, Ruin), Ruin.CanUse(out act, CanUseOption.MustUse));
                         default:
                             InOpener = false;
                             break;
@@ -288,10 +284,35 @@ public class SMN_Kirbo : SMN_Base
     protected override bool EmergencyAbility(IAction nextGCD, out IAction act)
     {
         if (InOpener) { return Opener(out act); }
-        if (!InOpener && Player.HasStatus(false, StatusID.Silence))
+        if (!InOpener && Player.HasStatus(false, StatusID.Silence) && Player.HasStatus(false, StatusID.SearingLight) && !Player.HasStatus(false, StatusID.Weakness) && InBahamut && UseBurstMedicine(out act))
         {
-            //if (Player.HasStatus(false, StatusID.SearingLight) && !Player.HasStatus(false, StatusID.Weakness) && InBahamut && UseBurstMedicine(out act)) return true;
-            if (EchoDrops.CanUse(out act)) return true;
+            return true;
+        }
+        if (EchoDrops.CanUse(out act)) return true;
+
+        switch (Configs.GetCombo("addSwiftcast"))
+        {
+            case 0:
+                break;
+
+            case 1:
+                if ((InGaruda || IsLastAction(ActionID.SummonEmerald)) && Swiftcast.CanUse(out act, CanUseOption.MustUse))
+                {
+                    return true;
+                }
+                break;
+
+            case 2:
+                if ((InIfrit || IsLastAction(ActionID.SummonRuby)) && Swiftcast.CanUse(out act, CanUseOption.MustUse))
+                    return true;
+                break;
+
+            case 3:
+                if (InGaruda || InIfrit)
+                {
+                    if (Swiftcast.CanUse(out act, CanUseOption.MustUse)) return true;
+                }
+                break;
         }
 
         return base.EmergencyAbility(nextGCD, out act);
@@ -303,39 +324,9 @@ public class SMN_Kirbo : SMN_Base
 
         if (!InOpener)
         {
-            if (InBahamut && !Player.HasStatus(false, StatusID.SearingLight))
+            if (InBahamut && !Player.HasStatus(false, StatusID.SearingLight) && SearingLight.CanUse(out act, CanUseOption.OnLastAbility | CanUseOption.MustUse))
             {
-                if (SearingLight.CanUse(out act, CanUseOption.OnLastAbility | CanUseOption.MustUse)) return true;
-            }
-
-            switch (Configs.GetCombo("addSwiftcast"))
-            {
-                default:
-                    break;
-
-                case 0:
-                    break;
-
-                case 1:
-                    if (InGaruda)
-                    {
-                        if (Swiftcast.CanUse(out act, CanUseOption.MustUse)) return true;
-                    }
-                    break;
-
-                case 2:
-                    if (InIfrit)
-                    {
-                        if (Swiftcast.CanUse(out act, CanUseOption.MustUse)) return true;
-                    }
-                    break;
-
-                case 3:
-                    if (InGaruda || InIfrit)
-                    {
-                        if (Swiftcast.CanUse(out act, CanUseOption.MustUse)) return true;
-                    }
-                    break;
+                return true;
             }
 
             if ((InBahamut && SummonBahamut.ElapsedOneChargeAfterGCD(1) || InPhoenix || IsTargetBoss && IsTargetDying) && EnkindleBahamut.CanUse(out act, CanUseOption.MustUse)) return true;

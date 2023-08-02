@@ -1,15 +1,24 @@
 ﻿namespace KirboRotations.JobHelpers
 {
-    internal class RotationState
-    {
-        internal enum OpenerState
-        {
-            _,
-            PrePull,
-            InOpener,
-            OpenerFinished,
-            FailedOpener
-        }
 
+    internal enum OpenerState
+    {
+        PrePull,
+        InOpener,
+        OpenerFinished,
+        FailedOpener
     }
+
+    internal enum RotationType
+    {
+        None,
+        Idle,
+        Countdown,
+        PrePull,
+        InOpener,
+        OpenerFinished,
+        FailedOpener,
+    }
+
+
 }
