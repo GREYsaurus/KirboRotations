@@ -1,4 +1,6 @@
-﻿namespace KirboRotations.Magical;
+﻿using Dalamud.Logging;
+
+namespace KirboRotations.Magical;
 
 #pragma warning disable CS0612 // Type or member is obsolete
 
@@ -36,8 +38,7 @@ public class SMN_Kirbo : SMN_Base
     private bool InOpener { get; set; }
     #endregion Variable's
 
-    #region
-
+    #region Buffs
     public static class Buffs
     {
         public const ushort
@@ -79,7 +80,8 @@ public class SMN_Kirbo : SMN_Base
                 {
                     switch (Openerstep)
                     {
-                        case 0:
+                        case 0: Ruin.CanUse(out act, CanUseOption.MustUse);
+
                             return ProcessOpenerStep(IsLastAction(true, Ruin), Ruin.CanUse(out act, CanUseOption.MustUse));
 
                         case 1:
@@ -87,9 +89,7 @@ public class SMN_Kirbo : SMN_Base
 
                         case 2:
                             return ProcessOpenerStep(IsLastAction(false, SearingLight), SearingLight.CanUse(out act, CanUseOption.MustUse | CanUseOption.OnLastAbility));
-
-                        case 3:  
-                            return ProcessOpenerStep(IsLastAction(true, Ruin), Ruin.CanUse(out act, CanUseOption.MustUse));
+                        case 3: // Ruin.CanUse(out act, CanUseOption.MustUse)
 
                         case 4: return ProcessOpenerStep(IsLastAction(true, Ruin), Ruin.CanUse(out act, CanUseOption.MustUse));
                         case 5: return ProcessOpenerStep(IsLastAction(true, Ruin) && !CombatElapsedLessGCD(3), Ruin.CanUse(out act, CanUseOption.MustUse));
@@ -213,9 +213,9 @@ public class SMN_Kirbo : SMN_Base
     [RotationDesc(ActionID.CrimsonCyclone)]
     protected override bool MoveForwardGCD(out IAction act)
     {
-        if (!IsMoving && CrimsonCyclone.CanUse(out act, CanUseOption.MustUse))
+        if (!IsMoving && CrimsonCyclone.CanUse(out act, CanUseOption.MustUse) && CrimsonCyclone.Target.DistanceToPlayer() <= Configs.GetFloat("SMN_JumpDistance"))
         {
-            if (CrimsonCyclone.Target.DistanceToPlayer() <= Configs.GetFloat("SMN_JumpDistance")) return true;
+            return true;
         }
         return base.MoveForwardGCD(out act);
     }
@@ -246,7 +246,10 @@ public class SMN_Kirbo : SMN_Base
 
             if (IsMoving && (Player.HasStatus(true, StatusID.GarudasFavor) || InIfrit)
                 && !Player.HasStatus(true, StatusID.SwiftCast) && !InBahamut && !InPhoenix
-                && RuinIV.CanUse(out act, CanUseOption.MustUse)) return true;
+                && RuinIV.CanUse(out act, CanUseOption.MustUse))
+            {
+                return true;
+            }
 
             switch (Configs.GetCombo("SummonOrder"))
             {
@@ -270,7 +273,11 @@ public class SMN_Kirbo : SMN_Base
             }
             if (SummonTimeEndAfterGCD() && AttunmentTimeEndAfterGCD() &&
                 !Player.HasStatus(true, StatusID.SwiftCast) && !InBahamut && !InPhoenix &&
-                RuinIV.CanUse(out act, CanUseOption.MustUse)) return true;
+                RuinIV.CanUse(out act, CanUseOption.MustUse))
+            {
+                return true;
+            }
+
             if (Outburst.CanUse(out act)) return true;
 
             if (Ruin.CanUse(out act)) return true;
@@ -310,10 +317,8 @@ public class SMN_Kirbo : SMN_Base
                 break;
 
             case 3:
-                if (InGaruda || InIfrit)
-                {
-                    if (Swiftcast.CanUse(out act, CanUseOption.MustUse)) return true;
-                }
+                if ((InGaruda || InIfrit) && Swiftcast.CanUse(out act, CanUseOption.MustUse))
+                    return true;
                 break;
         }
 
@@ -331,20 +336,35 @@ public class SMN_Kirbo : SMN_Base
                 return true;
             }
 
-            if ((InBahamut && SummonBahamut.ElapsedOneChargeAfterGCD(1) || InPhoenix || IsTargetBoss && IsTargetDying) && EnkindleBahamut.CanUse(out act, CanUseOption.MustUse)) return true;
+            if (((InBahamut && SummonBahamut.ElapsedOneChargeAfterGCD(1))
+                || InPhoenix
+                || (IsTargetBoss && IsTargetDying)) && EnkindleBahamut.CanUse(out act, CanUseOption.MustUse))
+            {
+                return true;
+            }
 
-            if ((InBahamut && SummonBahamut.ElapsedOneChargeAfterGCD(1) || IsTargetBoss && IsTargetDying) && DeathFlare.CanUse(out act, CanUseOption.MustUse)) return true;
+            if (((InBahamut && SummonBahamut.ElapsedOneChargeAfterGCD(1))
+                || (IsTargetBoss && IsTargetDying)) && DeathFlare.CanUse(out act, CanUseOption.MustUse))
+            {
+                return true;
+            }
 
             if (Rekindle.CanUse(out act, CanUseOption.MustUse)) return true;
 
             if (MountainBuster.CanUse(out act, CanUseOption.MustUse)) return true;
 
-            if ((Player.HasStatus(false, StatusID.SearingLight) && InBahamut && (SummonBahamut.ElapsedOneChargeAfterGCD(2) || !EnergyDrain.IsCoolingDown && SummonBahamut.ElapsedOneChargeAfterGCD(2)) ||
-                !SearingLight.EnoughLevel || IsTargetBoss && IsTargetDying) && PainFlare.CanUse(out act)) return true;
+            if (((Player.HasStatus(false, StatusID.SearingLight) && InBahamut && (SummonBahamut.ElapsedOneChargeAfterGCD(2) || (!EnergyDrain.IsCoolingDown && SummonBahamut.ElapsedOneChargeAfterGCD(2)))) ||
+                !SearingLight.EnoughLevel || (IsTargetBoss && IsTargetDying)) && PainFlare.CanUse(out act))
+            {
+                return true;
+            }
 
-            if ((Player.HasStatus(false, StatusID.SearingLight) && InBahamut && (SummonBahamut.ElapsedOneChargeAfterGCD(2) || !EnergyDrain.IsCoolingDown && SummonBahamut.ElapsedOneChargeAfterGCD(2)) ||
+            if (((Player.HasStatus(false, StatusID.SearingLight) && InBahamut && (SummonBahamut.ElapsedOneChargeAfterGCD(2) || (!EnergyDrain.IsCoolingDown && SummonBahamut.ElapsedOneChargeAfterGCD(2)))) ||
                 !SearingLight.EnoughLevel ||
-                IsTargetBoss && IsTargetDying) && Fester.CanUse(out act)) return true;
+                (IsTargetBoss && IsTargetDying)) && Fester.CanUse(out act))
+            {
+                return true;
+            }
 
             if (AetherCharge.CurrentCharges == 0 && EnergySiphon.CanUse(out act)) return true;
 
@@ -353,7 +373,7 @@ public class SMN_Kirbo : SMN_Base
             return false;
         }
         act = null;
-        return false; 
+        return false;
     }
 
     #endregion
@@ -391,37 +411,26 @@ public class SMN_Kirbo : SMN_Base
         bool HasSearingLight = !SearingLight.IsCoolingDown;
         bool HasSummonBahamut = !SummonBahamut.IsCoolingDown;
         bool HasEnergyDrain = !EnergyDrain.IsCoolingDown;
-        //bool HasAether = AetherCharge.CurrentCharges == 2;
 
         if (SummonBahamut.EnoughLevel)
         {
             OpenerActionsAvailable = HasSearingLight && HasSummonBahamut && HasEnergyDrain;
-            return;
         }
-        else
-        {
-            OpenerActionsAvailable = false;
-            return;
-        }
-    } // This method keeps checking if the actions needed for the opener are available to us and if so will set the variable 'OpenerActionsAvailable' to True
-
-    public override void OnTerritoryChanged() //This method is used when the player changes the terriroty, such as go into a duty.
-    {
-        // This should make sure that the variable 'Reset'
-        Openerstep = 0;
-        InOpener = false;
-
-        base.OnTerritoryChanged();
     }
 
+    public override void OnTerritoryChanged()
+    {
+        Openerstep = 0;
+        InOpener = false;
+        PluginLog.LogInformation("Changing Territory | Opener is set to false and steps are 0");
+    }
     #endregion
 
     #region Debug Menu
-
     public override void DisplayStatus()
     {
         var PartySize = PartyMembers.Count();
-        var p_name = Player.Name.ToString();
+
         #region Opener var's
 
         var Opener_Available = OpenerActionsAvailable ? "Available" : "Unavailable";
@@ -430,102 +439,115 @@ public class SMN_Kirbo : SMN_Base
         #endregion Opener var's
 
         #region Colours
+
         var yellow = new Vector4(1, 1, 0, 1);
         var Red = new Vector4(1, 0, 0, 1);
-        var Blue = new Vector4(0, (float)0.5882352941176471, (float)0.7843137254901961, 1);
+        var Green = new Vector4(0, 1, 0, 1);
         var Purple = new Vector4((float)0.5882352941176471, 0, 1, 1);
         var Orange = new Vector4((float)0.9607843137254902, (float)0.592156862745098, (float)0.15294117647058825, 1);
-        #endregion
 
+        #endregion Colours
+
+        if (ImGui.Button("Test"))
+        {
+            PluginLog.LogInformation("Test button presed!");
+        }
+
+        ImGui.Separator();
         ImGui.BeginChild("child", new Vector2(380, 0), true, ImGuiWindowFlags.None);
-        ImGui.TextUnformatted("Content Type: " + TerritoryContentType);
-        ImGui.TextColored(Red, "Health:   " + Player.CurrentHp); ImGui.SameLine(); ImGui.Text("   |   "); ImGui.SameLine(); ImGui.TextColored(Blue, "MP:   " + Player.CurrentMp);
-        if (ImGui.CollapsingHeader("| Rotation Info |"))
+        ImGui.TextColored(Red, "Content Type: " + TerritoryContentType + "");
+        ImGui.TextColored(Green, "     Health:   " + Player.CurrentHp + ""); ImGui.SameLine(); ImGui.TextColored(Purple, "       MP:   " + Player.CurrentMp);
+        if (ImGui.CollapsingHeader("| Rotation Info |") && ImGui.BeginTable("RotationInfo", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.BordersInner | ImGuiTableFlags.Resizable))
         {
-            if (ImGui.BeginTable("RotationInfo", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.BordersInner | ImGuiTableFlags.Resizable))
-            {
-                ImGui.Indent();
-                ImGui.TableNextColumn(); ImGui.TextColored(yellow, "" + RotationName);
-                ImGui.TableNextColumn(); ImGui.TextColored(yellow, Name);
-                ImGui.TableNextRow();
-                ImGui.TableNextColumn(); ImGui.TextColored(yellow, "Game Version: " + GameVersion);
-                ImGui.TableNextColumn(); ImGui.TextUnformatted(Description);
-                ImGui.TableNextRow();
-                ImGui.Unindent();
-                ImGui.EndTable();
-            }
+            ImGui.Indent();
+            ImGui.TableNextColumn(); ImGui.TextColored(Orange, "" + RotationName);
+            ImGui.TableNextColumn(); ImGui.TextColored(yellow, Name);
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn(); ImGui.TextColored(yellow, "Game Version: " + GameVersion);
+            ImGui.TableNextColumn(); ImGui.TextColored(Purple, "Ping:   " + Ping + "ms");
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn(); ImGui.Text("Content Type: ");
+            ImGui.TableNextColumn(); ImGui.Text(TerritoryContentType.ToString());
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn(); ImGui.Text("Party Size: ");
+            ImGui.TableNextColumn(); ImGui.TextDisabled("" + PartySize);
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn(); ImGui.TextDisabled("");
+            ImGui.TableNextColumn(); ImGui.TextDisabled("");
+            ImGui.TableNextRow();
+            ImGui.Unindent();
+            ImGui.EndTable();
         }
-        if (ImGui.CollapsingHeader("| Opener Info |"))
+        if (ImGui.CollapsingHeader("| Opener Info |") && ImGui.BeginTable("OpenerInfo", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.BordersInner | ImGuiTableFlags.Resizable))
         {
-            if (ImGui.BeginTable("OpenerInfo", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.BordersInner | ImGuiTableFlags.Resizable))
-            {
-                ImGui.Indent();
-                ImGui.TableNextColumn(); ImGui.Text("Opener availability:");
-                ImGui.TableNextColumn(); ImGui.Text(Opener_Available);
-                ImGui.TableNextRow();
-                ImGui.TableNextColumn(); ImGui.Text("Opener progression:");
-                ImGui.TableNextColumn(); ImGui.Text(Opener_In_Progress);
-                ImGui.TableNextRow();
-                ImGui.TableNextColumn(); ImGui.Text("Opener Step:");
-                ImGui.TableNextColumn(); ImGui.TextColored(yellow, Openerstep.ToString());
-                ImGui.TableNextRow();
-                ImGui.TableNextColumn(); ImGui.Text("");
-                ImGui.TableNextColumn(); ImGui.Text("");
-                ImGui.TableNextRow();
-                ImGui.TableNextColumn(); ImGui.Text("");
-                ImGui.TableNextColumn(); ImGui.Text("");
-                ImGui.Unindent();
-                ImGui.EndTable();
-            }
-        }
-        ImGui.Separator();
-        ImGui.Separator();
-        if (ImGui.CollapsingHeader("| Action Info |"))
-        {
-            if (ImGui.BeginTable("ActionInfo", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.BordersInner | ImGuiTableFlags.Resizable))
-            {
-                ImGui.Indent();
-                ImGui.TableNextColumn(); ImGui.Text("In Combat: ");
-                ImGui.TableNextColumn(); ImGui.Text(InCombat.ToString());
-                ImGui.TableNextRow();
-                ImGui.TableNextColumn(); ImGui.Text("Is Ruin last used GCD:");
-                ImGui.TableNextColumn(); ImGui.Text(IsLastGCD(false, Ruin).ToString());
-                ImGui.TableNextRow();
-                ImGui.TableNextColumn(); ImGui.Text("Searing Light: ");
-                ImGui.TableNextColumn(); ImGui.Text(Player.HasStatus(true, StatusID.SearingLight).ToString());
-                ImGui.TableNextRow();
-                ImGui.TableNextColumn(); ImGui.Text("");
-                ImGui.TableNextColumn(); ImGui.Text("");
-                ImGui.Unindent();
-                ImGui.EndTable();
-            }
+            ImGui.Indent();
+            ImGui.TableNextColumn(); ImGui.Text("Opener availability:");
+            ImGui.TableNextColumn(); ImGui.Text(Opener_Available);
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn(); ImGui.Text("Opener progression:");
+            ImGui.TableNextColumn(); ImGui.Text(Opener_In_Progress);
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn(); ImGui.Text("Opener Step:");
+            ImGui.TableNextColumn(); ImGui.TextColored(yellow, Openerstep.ToString());
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn(); ImGui.TextDisabled("");
+            ImGui.TableNextColumn(); ImGui.TextDisabled("");
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn(); ImGui.TextDisabled("");
+            ImGui.TableNextColumn(); ImGui.TextDisabled("");
+            ImGui.TableNextRow();
+            ImGui.Unindent();
+            ImGui.EndTable();
         }
         ImGui.Separator();
-        if (ImGui.CollapsingHeader("| Other Info |"))
+
+        if (ImGui.CollapsingHeader("| Action Info |") && ImGui.BeginTable("ActionInfo", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.BordersInner | ImGuiTableFlags.Resizable))
         {
-            if (ImGui.BeginTable("OtherInfo", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.BordersInner | ImGuiTableFlags.Resizable))
-            {
-                ImGui.Indent();
-                ImGui.TableNextColumn(); ImGui.TextColored(Purple, $"Ping:    {Ping} ms");
-                ImGui.TableNextColumn(); ImGui.TextColored(yellow, "GCD remaining: " + WeaponRemain);
-                ImGui.TableNextRow();
-                ImGui.TableNextColumn(); ImGui.TextColored(yellow, "GCD time: " + WeaponTotal);
-                ImGui.TableNextColumn();
-                ImGui.TableNextRow();
-                ImGui.TableNextColumn(); ImGui.TextColored(yellow, "oGCD time: ");
-                ImGui.TableNextColumn(); ImGui.Text(NextAbilityToNextGCD.ToString());
-                ImGui.TableNextRow();
-                ImGui.TableNextColumn(); ImGui.TextColored(Orange, "Combat Timer:");
-                ImGui.TableNextColumn(); ImGui.Text(CombatTime.ToString());
-                ImGui.TableNextRow();
-                ImGui.TableNextColumn(); ImGui.TextColored(yellow, "Seconds into the GCD window: ");
-                ImGui.TableNextColumn(); ImGui.TextColored(yellow, WeaponElapsed.ToString());
-                ImGui.Unindent();
-                ImGui.EndTable();
-            }
+            ImGui.Indent();
+            ImGui.TableNextColumn(); ImGui.Text("Is Ruin last used GCD:");
+            ImGui.TableNextColumn(); ImGui.Text(IsLastGCD(false, Ruin).ToString());
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn(); ImGui.TextDisabled("");
+            ImGui.TableNextColumn(); ImGui.TextDisabled("");
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn(); ImGui.TextDisabled("");
+            ImGui.TableNextColumn(); ImGui.TextDisabled("");
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn(); ImGui.TextDisabled("");
+            ImGui.TableNextColumn(); ImGui.TextDisabled("");
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn(); ImGui.TextDisabled("");
+            ImGui.TableNextColumn(); ImGui.TextDisabled("");
+            ImGui.TableNextRow();
+            ImGui.Unindent();
+            ImGui.EndTable();
+        }
+        ImGui.Separator();
+
+        if (ImGui.CollapsingHeader("| Other Info |") && ImGui.BeginTable("OtherInfo", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.BordersInner | ImGuiTableFlags.Resizable))
+        {
+            ImGui.Indent();
+            ImGui.TableNextColumn(); ImGui.TextColored(yellow, "GCD time: " + WeaponTotal);
+            ImGui.TableNextColumn(); ImGui.TextColored(yellow, " " + Ping);
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn(); ImGui.TextColored(yellow, "GCD time remaining: ");
+            ImGui.TableNextColumn(); ImGui.TextColored(yellow, "" + WeaponRemain);
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn(); ImGui.TextColored(yellow, "oGCD time left: ");
+            ImGui.TableNextColumn(); ImGui.TextColored(yellow, "" + NextAbilityToNextGCD);
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn(); ImGui.TextColored(Orange, "Combat Timer:");
+            ImGui.TableNextColumn(); ImGui.Text("" + ((int)CombatTime));
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn(); ImGui.TextDisabled("");
+            ImGui.TableNextColumn(); ImGui.TextDisabled("");
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn(); ImGui.TextDisabled("");
+            ImGui.TableNextColumn(); ImGui.TextDisabled("");
+            ImGui.Unindent();
+            ImGui.EndTable();
         }
         ImGui.EndChild();
     }
-
-    #endregion
+    #endregion Debug Menu
 }
