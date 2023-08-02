@@ -1,8 +1,7 @@
-﻿using RotationSolver.Basic.Data;
-
-namespace KirboRotations.Magical;
+﻿namespace KirboRotations.Magical;
 
 #pragma warning disable CS0612 // Type or member is obsolete
+
 [SourceCode("https://github.com/IncognitoWater/IncognitoWaterRotations/blob/main/IcWaRotations/Magical/Smn_Rota.cs")]
 [LinkDescription("https://www.thebalanceffxiv.com/img/jobs/smn/titan-first-opener.png", "TITAN FIRST OPENER")]
 [LinkDescription("https://www.thebalanceffxiv.com/img/jobs/smn/garuda-first-opener.png", "GARUDA FIRST OPENER")]
@@ -66,6 +65,7 @@ public class SMN_Kirbo : SMN_Base
     #endregion
 
     #region Opener instructions
+
     private bool Opener(out IAction act)
     {
         // Start of combat encounter
@@ -81,15 +81,17 @@ public class SMN_Kirbo : SMN_Base
                     {
                         case 0:
                             return ProcessOpenerStep(IsLastAction(true, Ruin), Ruin.CanUse(out act, CanUseOption.MustUse));
+
                         case 1:
                             return ProcessOpenerStep(IsLastAction(true, SummonBahamut), SummonBahamut.CanUse(out act, CanUseOption.MustUse));
+
                         case 2:
                             return ProcessOpenerStep(IsLastAction(false, SearingLight), SearingLight.CanUse(out act, CanUseOption.MustUse | CanUseOption.OnLastAbility));
-                        case 3:
+
+                        case 3:  
                             return ProcessOpenerStep(IsLastAction(true, Ruin), Ruin.CanUse(out act, CanUseOption.MustUse));
 
                         case 4: return ProcessOpenerStep(IsLastAction(true, Ruin), Ruin.CanUse(out act, CanUseOption.MustUse));
-
                         case 5: return ProcessOpenerStep(IsLastAction(true, Ruin) && !CombatElapsedLessGCD(3), Ruin.CanUse(out act, CanUseOption.MustUse));
                         case 6: return ProcessOpenerStep(IsLastAction(true, Ruin) && !CombatElapsedLessGCD(4), Ruin.CanUse(out act, CanUseOption.MustUse));
                         case 7: return ProcessOpenerStep(IsLastAction(true, EnergyDrain), EnergyDrain.CanUse(out act, CanUseOption.MustUse));
@@ -351,7 +353,7 @@ public class SMN_Kirbo : SMN_Base
             return false;
         }
         act = null;
-        return false;
+        return false; 
     }
 
     #endregion
