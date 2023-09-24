@@ -12,7 +12,7 @@
     <None Include="Magical\SMN_TEST.cs" />
   </ItemGroup>
   <ItemGroup>
-	  <PackageReference Include="RotationSolver.Basic" Version="3.1.2" />
+	  <PackageReference Include="RotationSolver.Basic" Version="3.3.1" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ECommons">
